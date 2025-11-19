@@ -18,5 +18,5 @@ sudo apt install nasm
 ```
 2. Correr comando: `./scripts/basic.sh`
 	- Para ejecutar tras compilar: `./scripts/basic.sh -r`
-	- Para compilar y ejecutar pruebas: `./scripts/mac.sh -t -r`
+	- Para compilar y ejecutar pruebas: `./scripts/basic.sh -t -r`
 	
