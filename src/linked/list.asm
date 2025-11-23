@@ -21,6 +21,10 @@ section .text
     extern print_str
     extern print_hex
 
+    extern mem_alloc
+    extern mem_free
+    extern mem_heap_dump
+
 ; CrearLista()  -> Lista
 
 ; Returns: 
@@ -77,7 +81,7 @@ ll_is_empty:
     je .is_empty
 
     mov ecx, 0      ; vacía = false
-    jmp salida
+    jmp .salida
 .is_empty:
     mov ecx, 1      ; vacía = true
 
@@ -181,7 +185,34 @@ ll_find_pos:
 ll_find_data:
     push ebp
     mov ebp, esp
+    push esi
+    push ecx ; contador de posicion
 
+    mov esi, [eax] ; esi = head
+    xor ecx, ecx  ; ecx = 0 (posición)
+
+.forBuscarDato:
+    test esi, esi
+    jz .dato_no_encontrado ; fin de lista
+
+    mov eax, [esi] ; eax = nodo->dato
+    cmp eax, ebx  ; comparar con dato buscado
+    je .dato_encontrado
+
+    mov esi, [esi + 4] ; esi = nodo->siguiente
+    inc ecx
+    jmp .forBuscarDato
+
+.dato_encontrado:
+    mov eax, ecx  ; eax = posición
+    jmp .finBuscarDato
+
+.dato_no_encontrado:
+    mov eax, -1    ; no encontrado
+
+.finBuscarDato:
+    pop ecx
+    pop esi
     pop ebp
     ret
 
