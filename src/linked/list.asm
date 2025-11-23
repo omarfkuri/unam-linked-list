@@ -24,11 +24,22 @@ section .text
 ; CrearLista()  -> Lista
 
 ; Returns: 
-;   ecx = list (ptr)
+;   eax = list (ptr)
 ll_new:
     push ebp
     mov ebp, esp
+    push ebx
+    ;Pedimos memoria para el apuntador cabeza o headder
+    ;Inicializamos los valores del nodo cabeza
+    push 4
+    call mem_alloc
+    add esp, 4
 
+    ;ahora eax tiene la direccion de la estructura lista
+    ;hacemos vacía la lista
+    mov dword [eax], 0    ; head = NULL
+
+    pop ebx
     pop ebp
     ret
 
@@ -59,6 +70,18 @@ ll_is_empty:
     push ebp
     mov ebp, esp
 
+    ;sabemos que eax tiene la direccion de la estructura lista
+    ;si esta vacia eax tiene un 0
+    mov edx, [eax]  ; edx = head
+    cmp edx, 0
+    je .is_empty
+
+    mov ecx, 0      ; vacía = false
+    jmp salida
+.is_empty:
+    mov ecx, 1      ; vacía = true
+
+.salida:
     pop ebp
     ret
 
@@ -124,7 +147,33 @@ ll_erase_data:
 ll_find_pos:
     push ebp
     mov ebp, esp
+    push esi
 
+    mov esi, [eax] ; esi = head
+    test esi, esi
+    jz .no_encontrado ; lista vacía
+
+.forBuscar:
+    cmp ecx, 0
+    je .encontrado
+
+    mov esi, [esi + 4] ; esi = nodo->siguiente
+
+    test esi, esi
+    jz .no_encontrado
+
+    dec ecx
+    jmp .forBuscar
+
+.encontrado:
+    mov eax, [esi] ; eax = nodo->dato
+    jmp .finBuscar
+
+.no_encontrado:
+    mov eax, 0     ; no encontrado
+
+.finBuscar:
+    pop esi
     pop ebp
     ret
 
@@ -140,10 +189,30 @@ ll_find_data:
 ll_show:
     push ebp
     mov ebp, esp
+    push esi
+    push ebx
 
+    push eax ; guardamos lista
     mov ecx, ll_show_msg
     mov edx, ll_show_msg_len
     call print_str
+    pop eax ; recuperamos lista
 
+    ;movemos la dirección del primer nodo para recorrer la lista
+    mov esi, [eax] ; esi = head
+
+.forNodos:
+    test esi, esi
+    jz .finNodos
+    ;mostramos el nodo actual
+    mov ecx, [esi] ; ecx = nodo->dato
+    call print_hex
+    ;avanzamos al siguiente nodo
+    mov esi, [esi + 4] ; esi = nodo->siguiente
+    jmp .forNodos
+
+.finNodos:
+    pop ebx
+    pop esi
     pop ebp
     ret
