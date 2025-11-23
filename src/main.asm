@@ -1,38 +1,41 @@
 section .data
-    welcome db 'Linked list', 0x0A
-    welcome_len equ $ - welcome
-
-    goodbye db 'Bye', 0x0A
-    goodbye_len equ $ - goodbye
+    msg_start db '--- INICIO DEL TEST ---', 0xA, 0
 
 section .text
     global _start
-    
     extern print_str
-    extern print_hex
-
     extern ll_new
     extern ll_add
-    extern ll_is_empty
-    extern ll_delete
-    extern ll_empty
-    extern ll_erase_pos
-    extern ll_erase_data
-    extern ll_find_pos
-    extern ll_find_data
     extern ll_show
 
 _start:
-    mov ecx, welcome
-    mov edx, welcome_len
+    ; 1. Print Debug
+    mov ecx, msg_start
+    mov edx, 24
     call print_str
 
+    ; 2. Crear Lista
+    call ll_new
+    ; SI TRUENA AQUÍ, es mem_alloc fallando al escribir heap_start
+    
+    mov esi, eax   ; Guardar puntero lista
+
+    ; 3. Agregar nodos
+    mov eax, esi
+    mov ebx, 0xAA
+    mov ecx, 0
+    call ll_add
+
+    mov eax, esi
+    mov ebx, 0xBB
+    mov ecx, 1
+    call ll_add
+
+    ; 4. Mostrar
+    mov eax, esi
     call ll_show
 
-    mov ecx, goodbye
-    mov edx, goodbye_len
-    call print_str
-
+    ; Salir
     mov eax, 1
-    mov ebx, 0
+    xor ebx, ebx
     int 0x80

@@ -59,7 +59,57 @@ ll_new:
 ll_add:
     push ebp
     mov ebp, esp
+    push esi
+    push edi
+    push ebx
 
+    mov ecx, ebx ; dato
+    call ll_node_new
+
+    mov ebx, eax ; nuevo nodo
+
+    ;inicio
+    cmp ecx, 0
+    je .agregar_inicio
+
+    mov edx, [esi]      ; EDX = Head actual
+    test edx, edx
+    jz .agregar_inicio
+
+    mov esi, eax
+    mov edi, ecx ; posición
+
+    dec edi
+
+.forAgregar:
+    cmp edi, 0
+    jz .agregar_inicio
+
+    cmp dword [edx + 4], 0
+    je .agregar_enmedio
+
+    mov edx, [edx + 4] ; edx = nodo->siguiente
+    dec edi
+    jmp .forAgregar
+
+.agregar_enmedio:
+    ; enlazamos el nuevo nodo
+    mov eax, [edx+4]    ; Guardamos el 'Siguiente' del Anterior
+    mov [ebx+4], eax    ; Nuevo->Siguiente = Viejo Siguiente
+    mov [edx+4], ebx    ; Anterior->Siguiente = Nuevo
+    jmp .fin_agregar
+
+.agregar_inicio:
+    mov eax, [esi]      ; Guardamos el Head actual
+    mov [ebx+4], eax    ; Nuevo->Siguiente = Head actual
+    mov [esi], ebx      ; Lista->Head = Nuevo
+
+.fin_agregar:
+    mov ecx, esi        ; Retornamos el puntero de la lista en ECX
+
+    pop ebx             ; Restauramos registros
+    pop edi
+    pop esi
     pop ebp
     ret
 
@@ -236,8 +286,10 @@ ll_show:
     test esi, esi
     jz .finNodos
     ;mostramos el nodo actual
-    mov ecx, [esi] ; ecx = nodo->dato
+    mov eax, [esi] ; eax = nodo->dato
+    push esi
     call print_hex
+    pop esi
     ;avanzamos al siguiente nodo
     mov esi, [esi + 4] ; esi = nodo->siguiente
     jmp .forNodos

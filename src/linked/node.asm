@@ -8,18 +8,37 @@ section .text
     global ll_node_show
 
     extern print_str
+    extern mem_alloc
+    extern mem_free
 
 ; CrearNodo(Dato) -> Nodo
 
 ; Params: 
-;   eax = size (int)
+;   ecx = size (int)
 
 ; Returns: 
-;   ecx = value (ptr)
+;   eax = value (ptr)
 ll_node_new:
     push ebp
     mov ebp, esp
+    push ebx
+    push ecx
 
+    ; 1. Pedir memoria: 8 bytes (4 dato + 4 siguiente)
+    push 8
+    call mem_alloc
+    add esp, 4
+
+    pop ecx
+
+    test eax, eax
+    jz .fin_nuevo_nodo    ; Si es 0, retornamos error osea malloc no jala bien  
+    
+    mov [eax], ecx       ; guardamos el Dato
+    mov dword [eax+4], 0 ; Siguiente = NULL
+
+.fin_nuevo_nodo:
+    pop ebx
     pop ebp
     ret
 

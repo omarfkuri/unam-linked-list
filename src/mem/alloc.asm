@@ -1,4 +1,7 @@
 section .data
+    global heap_start
+    global heap_end
+
     heap_start dd 0
     heap_end dd 0
     HEADER_SIZE equ 8
@@ -8,9 +11,9 @@ section .text
 
 ; MemAlloc(size) -> ptr
 ; Params: 
-;   eax = size (int)
+;   [ebp+8] = size (int)
 ; Returns: 
-;   ecx = value (ptr)
+;   eax = value (ptr)
 mem_alloc:
     push ebp
     mov ebp, esp
@@ -20,11 +23,11 @@ mem_alloc:
     ; si size = 0 return NUll
     mov ecx, [ebp+8] ;cargamos el size
     cmp ecx, 0
-    jz return_Null
+    jz .return_Null
     ;Si heap_start = 0 Entonces
     mov eax, [heap_start]
     cmp eax, 0
-    jnz iniciado
+    jnz .iniciado
     ;heap_start <- syscall_brk(0)  //Obtener el valor de inicio del heap
     ;heap_end <- heap_start
     mov eax, 45
@@ -34,13 +37,13 @@ mem_alloc:
     mov [heap_start], eax
     mov [heap_end], eax
 
-iniciado:
+.iniciado:
     ; block <- heap_start //Asignamos el inicio del bloque nuevo
     mov esi, [heap_start]
-    buscar_bloque:
+.buscar_bloque:
     ;Mientras block < heap_end Hacer
     cmp esi, [heap_end]
-    jae no_encontrado ;Si esi >= heap_end, rompemos el bucle (vamos a pedir memoria)
+    jae .no_encontrado ;Si esi >= heap_end, rompemos el bucle (vamos a pedir memoria)
 
     ;block_size_payload <- block_size_attr // block_size = [block]
     mov eax, [esi]
@@ -50,9 +53,9 @@ iniciado:
 
     ;Si block_free = 1 y block_size_payload >= size Entonces
     cmp edx, 1
-    jne siguiente_bloque
+    jne .siguiente_bloque
     cmp eax, ecx
-    jl siguiente_bloque
+    jl .siguiente_bloque
 
     ;block_free_attr <- 0  // [block +4] = 0 Marcar como ocupado
     mov dword [esi+4], 0
@@ -60,15 +63,15 @@ iniciado:
     ;old_ptr <- block + HEADER_SIZE 
     add esi, 8
     mov eax, esi
-    jmp salida ;//Return
+    jmp .salida ;//Return
 
-siguiente_bloque:
+.siguiente_bloque:
     ;block <- block + HEADER_SIZE + block_size_payload
     add esi, 8
     add esi, eax
-    jmp buscar_bloque
+    jmp .buscar_bloque
 
-no_encontrado:
+.no_encontrado:
 ;//Si no hay bloques libres -> pedir mas memoria al sistema
 ;old_end <- heap_end
     mov ebx, [heap_end]
@@ -96,12 +99,12 @@ no_encontrado:
     add esi, 8
 ;//return old_ptr
     mov eax, esi
-    jmp salida
+    jmp .salida
 
-return_Null:
+.return_Null:
     xor eax, eax           ; EAX = 0 (NULL)
 
-salida:
+.salida:
     pop esi
     pop ebx                
     mov esp, ebp
