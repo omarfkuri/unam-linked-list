@@ -72,7 +72,7 @@ ll_add:
     cmp ecx, 0
     je .agregar_inicio
 
-    mov edx, [esi]      ; EDX = Head actual
+    mov edx, [esi]      ; edx = Head actual
     test edx, edx
     jz .agregar_inicio
 
@@ -140,16 +140,51 @@ ll_is_empty:
     ret
 
 ; BorrarLista(Lista) -> Boleano
-
 ; Params: 
 ;   eax = list (ptr)
-
 ; Returns: 
 ;   ecx = deleted (bool)
 ll_delete:
     push ebp
     mov ebp, esp
-
+    push esi
+    push edi
+    
+    ; Verificar si la lista es NULL
+    test eax, eax
+    jz .delete_failed
+    
+    mov esi, eax        ; Apuntador a lista
+    mov edi, [eax]      ; edi = head
+    
+    ; Liberar todos los nodos
+.delete_loop:
+    test edi, edi
+    jz .delete_list_struct
+    
+    mov ebx, [edi + 4]  ; ebx = siguiente nodo
+    mov eax, edi        ; eax = nodo actual
+    push ebx            ; Guardar siguiente
+    call ll_node_delete
+    pop edi             ; Recuperar siguiente como actual
+    jmp .delete_loop
+    
+.delete_list_struct:
+    ; Liberar la estructura de la lista
+    mov eax, esi
+    call mem_free
+    
+    ; Retornar 1
+    mov ecx, 1
+    jmp .delete_end
+    
+.delete_failed:
+    ; Retornar 0
+    xor ecx, ecx
+    
+.delete_end:
+    pop edi
+    pop esi
     pop ebp
     ret
 
@@ -157,13 +192,42 @@ ll_delete:
 
 ; Params: 
 ;   eax = list (ptr)
-
 ; Returns: 
 ;   ecx = list (ptr)
 ll_empty:
     push ebp
     mov ebp, esp
-
+    push esi
+    push edi
+    
+    ; Verificar si la lista es NULL
+    test eax, eax
+    jz .empty_end
+    
+    mov esi, eax        ; Guardar puntero a la lista
+    mov edi, [eax]      ; edi = head
+    
+    ; Liberar todos los nodos
+.empty_loop:
+    test edi, edi
+    jz .empty_list
+    
+    mov ebx, [edi + 4]  ; ebx = siguiente nodo
+    mov eax, edi        ; eax = nodo actual
+    push ebx            ; Guardar siguiente
+    call ll_node_delete
+    pop edi             ; Recuperar siguiente como actual
+    jmp .empty_loop
+    
+.empty_list:
+    ; Establecer head = NULL
+    mov dword [esi], 0
+    mov ecx, esi
+    jmp .empty_end
+    
+.empty_end:
+    pop edi
+    pop esi
     pop ebp
     ret
 
@@ -178,7 +242,71 @@ ll_empty:
 ll_erase_pos:
     push ebp
     mov ebp, esp
-
+    push esi
+    push edi
+    
+    ; Verificar si la lista es NULL
+    test eax, eax
+    jz .erase_pos_failed
+    
+    mov esi, [eax]      ; esi = head
+    test esi, esi
+    jz .erase_pos_failed ; Lista vacía
+    
+    ; Caso especial: borrar posición 0 (head)
+    cmp ebx, 0
+    je .erase_head
+    
+    ; Buscar el nodo anterior a la posición
+    mov edi, esi        ; edi = nodo actual
+    dec ebx             ; Ajustar para encontrar el anterior
+    
+.find_prev:
+    cmp ebx, 0
+    je .found_prev
+    
+    mov edi, [edi + 4]  ; edi = siguiente
+    test edi, edi
+    jz .erase_pos_failed ; Posición fuera de rango
+    
+    dec ebx
+    jmp .find_prev
+    
+.found_prev:
+    ; edi = nodo anterior
+    mov esi, [edi + 4]  ; esi = nodo a borrar
+    test esi, esi
+    jz .erase_pos_failed ; No hay nodo en esa posición
+    
+    ; Desenlazar el nodo
+    mov ebx, [esi + 4]  ; ebx = siguiente del nodo a borrar
+    mov [edi + 4], ebx  ; Anterior->siguiente = siguiente del borrado
+    
+    ; Liberar el nodo
+    mov eax, esi
+    call ll_node_delete
+    
+    mov ecx, 1          ; Retornar éxito
+    jmp .erase_pos_end
+    
+.erase_head:
+    ; Borrar el head
+    mov edi, [esi + 4]  ; edi = nuevo head
+    mov [eax], edi      ; Lista->head = nuevo head
+    
+    ; Liberar el viejo head
+    mov eax, esi
+    call ll_node_delete
+    
+    mov ecx, 1
+    jmp .erase_pos_end
+    
+.erase_pos_failed:
+    xor ecx, ecx
+    
+.erase_pos_end:
+    pop edi
+    pop esi
     pop ebp
     ret
 
@@ -194,6 +322,71 @@ ll_erase_data:
     push ebp
     mov ebp, esp
 
+    push esi
+    push edi
+    push edx
+    
+    ; Verificar si la lista es NULL
+    test eax, eax
+    jz .erase_data_failed
+    
+    mov esi, eax        ; esi = puntero a la lista
+    mov edi, [eax]      ; edi = head
+    test edi, edi
+    jz .erase_data_failed ; Lista vacía
+    
+    ; Caso especial: el dato está en el head
+    mov edx, [edi]      ; edx = dato del head
+    cmp edx, ebx
+    je .erase_data_head
+    
+    ; Buscar el nodo que contiene el dato
+    mov edx, edi        ; edx = nodo de antes
+    mov edi, [edi + 4]  ; edi = nodo actual
+    
+.find_data:
+    test edi, edi
+    jz .erase_data_failed ; No se encontró el dato
+    
+    mov eax, [edi]      ; eax = dato del nodo actual
+    cmp eax, ebx
+    je .found_data
+    
+    mov edx, edi
+    mov edi, [edi + 4]
+    jmp .find_data
+    
+.found_data:
+    ; edx = nodo anterior, edi = nodo a borrar
+    mov eax, [edi + 4]  ; eax = siguiente del nodo a borrar
+    mov [edx + 4], eax  ; prev->siguiente = siguiente del borrado
+    
+    ; Liberar el nodo
+    mov eax, edi
+    call ll_node_delete
+    
+    mov ecx, 1          ; Retornar éxito
+    jmp .erase_data_end
+    
+.erase_data_head:
+    ; Borrar el head
+    mov eax, [edi + 4]  ; eax = nuevo head
+    mov [esi], eax      ; lista->head = nuevo head
+    
+    ; Liberar el viejo head
+    mov eax, edi
+    call ll_node_delete
+    
+    mov ecx, 1          ; Retornar éxito
+    jmp .erase_data_end
+    
+.erase_data_failed:
+    xor ecx, ecx        ; Retornar 0 (falló)
+    
+.erase_data_end:
+    pop edx
+    pop edi
+    pop esi
     pop ebp
     ret
 

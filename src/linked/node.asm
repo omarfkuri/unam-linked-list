@@ -48,10 +48,32 @@ ll_node_new:
     ret
 
 ; BorrarNodo(Nodo) -> Booleano
+; Params: 
+;   eax = nodo (ptr)
+; Returns: 
+;   eax = borrado (bool: 1 si se borró, 0 si falló)
 ll_node_delete:
     push ebp
     mov ebp, esp
-
+    push ebx
+    
+    ; Verificar si el nodo es NULL
+    test eax, eax
+    jz .nodo_null
+    
+    ; Liberar la memoria del nodo
+    call mem_free
+    
+    ; Retornar 1
+    mov eax, 1
+    jmp .fin_borrar
+    
+.nodo_null:
+    ; Retornar 0
+    xor eax, eax
+    
+.fin_borrar:
+    pop ebx
     pop ebp
     ret
 

@@ -6,6 +6,7 @@ section .data
     nl db 10    ;    '\n'
     
 section .text
+    global print_int
 
 ; Convierte un entero(EAX) en una cadena
 ; Retorna: ECX el puntero al buffer
