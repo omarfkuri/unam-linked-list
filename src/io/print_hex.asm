@@ -2,7 +2,7 @@ section .text
     global print_hex
     
 section .data
-    buffer_hex db '00000000', 0
+    buffer_hex db '0x00000000', 0
     nl db 10    
 
 ; PrintHex(int) -> void
@@ -19,7 +19,10 @@ print_hex:
     push edi
     
     mov ecx, 8
-    mov edi, buffer_hex + 7
+    mov edi, buffer_hex + 9
+
+    add ebx, '0'
+    add ebx, 'x'
     
 convertir_hex:
     mov ebx, eax
@@ -41,14 +44,14 @@ almacenar:
     mov eax, 4
     mov ebx, 1
     mov ecx, buffer_hex
-    mov edx, 8
+    mov edx, 10
     int 0x80
     
-    mov eax, 4
-    mov ebx, 1
-    mov ecx, nl
-    mov edx, 1
-    int 0x80
+    ; mov eax, 4
+    ; mov ebx, 1
+    ; mov ecx, nl
+    ; mov edx, 1
+    ; int 0x80
     
     pop edi
     pop edx

@@ -1,6 +1,9 @@
 section .data
-    ll_node_show_msg db 'Nodo:', 0x0A
-    ll_node_show_msg_len equ $ - ll_node_show_msg
+    ll_node_show_msg_beg db 'Nodo{ '
+    ll_node_show_msg_beg_len equ $ - ll_node_show_msg_beg
+
+    ll_node_show_msg_end db ' }', 0x0A
+    ll_node_show_msg_end_len equ $ - ll_node_show_msg_end
 
 section .text
     global ll_node_new
@@ -8,6 +11,8 @@ section .text
     global ll_node_show
 
     extern print_str
+    extern print_int
+    extern print_hex
     extern mem_alloc
     extern mem_free
 
@@ -51,13 +56,26 @@ ll_node_delete:
     ret
 
 ; MostarNodo(Nodo) -> void
+
+; Params: 
+;   ecx = address (ptr)
 ll_node_show:
     push ebp
     mov ebp, esp
 
-    mov ecx, ll_node_show_msg
-    mov edx, ll_node_show_msg_len
+    mov ecx, ll_node_show_msg_beg
+    mov edx, ll_node_show_msg_beg_len
     call print_str
+
+    push esi
+    call print_hex
+    pop esi
+
+    mov ecx, ll_node_show_msg_end
+    mov edx, ll_node_show_msg_end_len
+    call print_str
+
+    ; mov eax
 
     pop ebp
     ret

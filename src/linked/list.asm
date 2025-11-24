@@ -288,7 +288,7 @@ ll_show:
     ;mostramos el nodo actual
     mov eax, [esi] ; eax = nodo->dato
     push esi
-    call print_hex
+    call ll_node_show
     pop esi
     ;avanzamos al siguiente nodo
     mov esi, [esi + 4] ; esi = nodo->siguiente
