@@ -1,3 +1,7 @@
+section .data
+    test_str db 'Testing "alloc"', 0x0A
+    test_str_len equ $ - test_str
+
 section .text
     global _start
     

@@ -1,13 +1,17 @@
 section .data
     global heap_start
     global heap_end
-
+    global HEADER_SIZE
+    
     heap_start dd 0
     heap_end dd 0
     HEADER_SIZE equ 8
 
 section .text
     global mem_alloc
+
+    extern print_str
+    extern print_hex
 
 ; MemAlloc(size) -> ptr
 ; Params: 
@@ -110,3 +114,5 @@ mem_alloc:
     mov esp, ebp
     pop ebp
     ret
+
+

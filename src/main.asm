@@ -3,10 +3,13 @@ section .data
 
 section .text
     global _start
+
     extern print_str
     extern ll_new
     extern ll_add
     extern ll_show
+
+    extern mem_heap_dump
 
 _start:
     ; 1. Print Debug
@@ -34,6 +37,9 @@ _start:
     ; 4. Mostrar
     mov eax, esi
     call ll_show
+
+    ; 5. Mostrar dump
+    call mem_heap_dump
 
     ; Salir
     mov eax, 1
