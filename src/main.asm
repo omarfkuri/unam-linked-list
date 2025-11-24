@@ -108,10 +108,11 @@ _start:
     mov eax, esi
     call ll_is_empty
     
+    push ecx
     mov ecx, msg_resultado
     mov edx, msg_resultado_len
     call print_str
-    mov eax, ecx
+    pop eax
     call print_int
     mov ecx, newline
     mov edx, newline_len
@@ -126,9 +127,11 @@ _start:
     mov ecx, 2
     call ll_find_pos
     
+    push eax
     mov ecx, msg_resultado
     mov edx, msg_resultado_len
     call print_str
+    pop eax
     call print_hex
     mov ecx, newline
     mov edx, newline_len
@@ -143,9 +146,11 @@ _start:
     mov ebx, 0xBB
     call ll_find_data
     
+    push eax
     mov ecx, msg_resultado
     mov edx, msg_resultado_len
     call print_str
+    pop eax
     call print_int
     mov ecx, newline
     mov edx, newline_len
@@ -160,10 +165,11 @@ _start:
     mov ebx, 1
     call ll_erase_pos
     
+    push ecx
     mov ecx, msg_resultado
     mov edx, msg_resultado_len
     call print_str
-    mov eax, ecx
+    pop eax
     call print_int
     mov ecx, newline
     mov edx, newline_len
@@ -181,10 +187,11 @@ _start:
     mov ebx, 0xAA
     call ll_erase_data
     
+    push ecx
     mov ecx, msg_resultado
     mov edx, msg_resultado_len
     call print_str
-    mov eax, ecx
+    pop eax
     call print_int
     mov ecx, newline
     mov edx, newline_len
@@ -218,10 +225,11 @@ _start:
     mov eax, esi
     call ll_is_empty
     
+    push ecx
     mov ecx, msg_resultado
     mov edx, msg_resultado_len
     call print_str
-    mov eax, ecx
+    pop eax
     call print_int
     mov ecx, newline
     mov edx, newline_len
@@ -253,10 +261,11 @@ _start:
     mov eax, esi
     call ll_delete
     
+    push ecx
     mov ecx, msg_resultado
     mov edx, msg_resultado_len
     call print_str
-    mov eax, ecx
+    pop eax
     call print_int
     mov ecx, newline
     mov edx, newline_len
